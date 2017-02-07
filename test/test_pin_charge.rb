@@ -12,6 +12,41 @@ class TestPinCharge < MiniTest::Unit::TestCase
     end
   end
 
+  def test_card_declined
+    FakeWeb.register_uri(:post, 'https://test-api.pin.net.au/1/charges', body: fixtures['responses']['charge']['card_declined'])
+    assert_raises PinPayment::Error::CardDeclined do
+      PinPayment::Charge.create(charge_hash)
+    end
+  end
+
+  def test_insufficient_funds
+    FakeWeb.register_uri(:post, 'https://test-api.pin.net.au/1/charges', body: fixtures['responses']['charge']['insufficient_funds'])
+    assert_raises PinPayment::Error::InsufficientFunds do
+      PinPayment::Charge.create(charge_hash)
+    end
+  end
+
+  def test_processing_error
+    FakeWeb.register_uri(:post, 'https://test-api.pin.net.au/1/charges', body: fixtures['responses']['charge']['processing_error'])
+    assert_raises PinPayment::Error::ProcessingError do
+      PinPayment::Charge.create(charge_hash)
+    end
+  end
+
+  def test_suspected_fraud
+    FakeWeb.register_uri(:post, 'https://test-api.pin.net.au/1/charges', body: fixtures['responses']['charge']['suspected_fraud'])
+    assert_raises PinPayment::Error::SuspectedFraud do
+      PinPayment::Charge.create(charge_hash)
+    end
+  end
+
+  def test_expired_card
+    FakeWeb.register_uri(:post, 'https://test-api.pin.net.au/1/charges', body: fixtures['responses']['charge']['expired_card'])
+    assert_raises PinPayment::Error::ExpiredCard do
+      PinPayment::Charge.create(charge_hash)
+    end
+  end
+
   def test_successful_charge
     FakeWeb.register_uri(:post, 'https://test-api.pin.net.au/1/charges', body: fixtures['responses']['charge']['success'])
     charge = PinPayment::Charge.create(charge_hash)
